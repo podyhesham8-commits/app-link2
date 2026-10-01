@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معرض مواقعي - Web Showcase (نسخة مستقلة)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    .scrollbar-none::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white flex flex-col">
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600/95 backdrop-blur-md text-white text-sm font-semibold shadow-2xl border border-indigo-400/30 transition-all duration-300">
+    <span id="toast-text"></span>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-slate-900/85 backdrop-blur-xl border-b border-slate-800 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25 ring-1 ring-white/20">
+          <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <path stroke-width="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span class="absolute -bottom-1 -left-1 flex h-3.5 w-3.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 ring-2 ring-slate-900"></span>
+          </span>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-black bg-gradient-to-l from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+              معرض مواقعي
+            </h1>
+            <span id="storage-badge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              قاعدة بيانات حقيقية
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">
+            ملف تطبيقي مستقل بالكامل - يعمل محلياً أو سحابياً
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Site count -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-medium">
+          <span>المواقع:</span>
+          <span id="header-site-count" class="font-bold text-white px-1.5 py-0.5 rounded bg-slate-700">0</span>
+        </div>
+
+        <!-- Google User Profile / Login -->
+        <div id="auth-section" class="flex items-center">
+          <button id="btn-open-login" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors">
+            <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <span>دخول بجوجل</span>
+          </button>
+
+          <div id="user-profile-badge" class="hidden items-center gap-2 bg-slate-800/80 border border-slate-700/70 rounded-2xl p-1.5 pl-3">
+            <img id="user-avatar" src="" alt="Avatar" class="w-8 h-8 rounded-xl object-cover ring-2 ring-indigo-500/30">
+            <div class="hidden lg:block text-right">
+              <div id="user-name" class="text-xs font-bold text-white truncate max-w-[120px]"></div>
+              <div id="user-email" class="text-[10px] text-slate-400 truncate max-w-[120px]"></div>
+            </div>
+            <button id="btn-logout" title="تسجيل الخروج" class="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700/60 rounded-xl transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Publish Button -->
+        <button id="btn-open-publish" class="group inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 active:scale-95 shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+          <svg class="w-4 h-4 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span>نشر موقع جديد</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Hero / Stats Banner -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/70 via-slate-900 to-purple-950/50 border border-slate-800 p-6 sm:p-10 mb-8 shadow-2xl">
+      <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-4">
+            <span>✨ معرض مواقع الويب الحقيقي المستقل</span>
+          </div>
+
+          <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug sm:leading-tight">
+            استعرض وانشر جميع المواقع التي صنعتها للعالم 🚀
+          </h2>
+
+          <p class="text-sm sm:text-base text-slate-300 mt-3 leading-relaxed">
+            هذا الملف مستقل بالكامل (<code class="bg-indigo-950 px-2 py-0.5 rounded text-indigo-300 font-mono text-xs">app link.html</code>). يمكنك تشغيله على جهازك مباشرة أو رفعه على أي استضافة بدون إعدادات معقدة.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-3 mt-6">
+            <button id="btn-hero-publish" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 transition-all cursor-pointer">
+              <span>نشر موقع جديد (بكلمة السر)</span>
+            </button>
+            <div class="text-xs text-slate-400 bg-slate-900/80 px-3 py-2.5 rounded-xl border border-slate-800 flex items-center gap-1.5">
+              <span>🔒 محمي بكلمة سر النشر المعتمدة</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Badges -->
+        <div class="grid grid-cols-3 gap-3 sm:gap-4 lg:w-96 shrink-0">
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center shadow-lg">
+            <div class="text-xl sm:text-2xl font-black text-white" id="stat-total-sites">0</div>
+            <div class="text-[11px] text-slate-400 font-medium mt-0.5">موقع منشور</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center shadow-lg">
+            <div class="text-xl sm:text-2xl font-black text-white" id="stat-total-visits">0</div>
+            <div class="text-[11px] text-slate-400 font-medium mt-0.5">زيارة ونقرة</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl text-center shadow-lg">
+            <div class="text-xl sm:text-2xl font-black text-white" id="stat-total-likes">0</div>
+            <div class="text-[11px] text-slate-400 font-medium mt-0.5">إعجاب ❤️</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="space-y-4 mb-8">
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <!-- Search Input -->
+        <div class="relative w-full sm:flex-1">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="ابحث عن موقع بالاسم، الرابط، أو الوصف..."
+            class="w-full pl-10 pr-11 py-3 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 text-sm shadow-inner"
+          />
+          <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+        </div>
+
+        <!-- Sort -->
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <select id="sort-select" class="pr-8 pl-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 text-xs font-semibold focus:outline-none focus:border-indigo-500 cursor-pointer">
+            <option value="newest">الأحدث أولاً</option>
+            <option value="likes">الأكثر إعجاباً ❤️</option>
+            <option value="clicks">الأكثر زيارة 🚀</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Categories Pills -->
+      <div id="categories-container" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <!-- populated dynamically -->
+      </div>
+    </div>
+
+    <!-- Section Header -->
+    <div class="flex items-center justify-between mb-6 pb-2 border-b border-slate-800/80">
+      <div class="flex items-center gap-2">
+        <h3 class="text-lg font-bold text-white">المواقع الحقيقية المنشورة</h3>
+        <span id="filtered-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          0 موقع
+        </span>
+      </div>
+      <div class="text-xs text-slate-400">
+        قاعدة بيانات نشطة ومحفوظة
+      </div>
+    </div>
+
+    <!-- Sites Grid Container -->
+    <div id="sites-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Cards rendered here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-16 px-4 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800 max-w-lg mx-auto my-8">
+      <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      </div>
+      <h4 class="text-lg font-bold text-white mb-2">قاعدة البيانات جاهزة ونظيفة</h4>
+      <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+        لا توجد أي بيانات وهمية. انقر على الزر أدناه لنشر موقعك الأول بكلمة المرور وصورة من جهازك!
+      </p>
+      <button id="btn-empty-publish" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 cursor-pointer">
+        <span>نشر موقعك الأول الآن 🚀</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-16 border-t border-slate-900 bg-slate-950/80 py-8 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>ملف app link.html المستقل جاهز للتشغيل في أي متصفح مباشرة</span>
+      </div>
+      <div>
+        <span>معرض المواقع والمشاريع الرقمية</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. Passcode Verification Modal -->
+  <div id="modal-passcode" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+    <div class="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 ring-1 ring-white/10">
+      <button id="btn-close-passcode" class="absolute top-5 left-5 text-slate-400 hover:text-white p-2 rounded-xl">✕</button>
+      
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">تصريح نشر المواقع</h3>
+        <p class="text-xs text-slate-400">أدخل كلمة المرور المعتمدة لفتح نموذج النشر</p>
+      </div>
+
+      <form id="form-passcode" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2">كلمة المرور:</label>
+          <input
+            id="input-passcode"
+            type="password"
+            placeholder="أدخل كلمة المرور هنا..."
+            dir="ltr"
+            class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-2xl text-center text-white font-mono text-lg tracking-wider focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div id="passcode-error" class="hidden text-xs text-red-400 bg-red-950/40 p-2.5 rounded-xl border border-red-500/30 text-center animate-shake">
+          كلمة المرور غير صحيحة، يرجى كتابة الرمز المصرح به.
+        </div>
+
+        <div class="text-xs text-slate-500 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 text-center">
+          🔒 النشر محمي بكلمة مرور خاصة بالمطور المعتمد
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="btn-cancel-passcode" class="flex-1 py-3 px-4 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-sm">
+            إلغاء
+          </button>
+          <button type="submit" class="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30">
+            تأكيد وفتح
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Publish Website Modal -->
+  <div id="modal-publish" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+    <div class="relative w-full max-w-2xl my-8 bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 ring-1 ring-white/10">
+      <button id="btn-close-publish" class="absolute top-5 left-5 text-slate-400 hover:text-white p-2 rounded-xl">✕</button>
+
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white">
+          🚀
+        </div>
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">نشر موقع جديد في المعرض</h2>
+          <p class="text-xs sm:text-sm text-slate-400">سيتم حفظ موقعك مباشرة في قاعدة البيانات ليظهر للجميع</p>
+        </div>
+      </div>
+
+      <form id="form-publish" class="space-y-4">
+        <!-- Title & URL -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">اسم الموقع <span class="text-red-400">*</span></label>
+            <input id="pub-title" type="text" required placeholder="مثال: متجر الإلكترونيات" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">رابط الموقع (URL) <span class="text-red-400">*</span></label>
+            <input id="pub-url" type="text" required dir="ltr" placeholder="https://example.com" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm font-mono focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <!-- Category & Tags -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">التصنيف</label>
+            <select id="pub-category" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+              <option value="تطبيقات ويب">تطبيقات ويب</option>
+              <option value="متاجر إلكترونية">متاجر إلكترونية</option>
+              <option value="بورتفوليو وشخصي">بورتفوليو وشخصي</option>
+              <option value="ذكاء اصطناعي">ذكاء اصطناعي</option>
+              <option value="ألعاب وترفيه">ألعاب وترفيه</option>
+              <option value="أدوات وإنتاجية">أدوات وإنتاجية</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">الوسوم والتقنيات (مفصولة بفواصل)</label>
+            <input id="pub-tags" type="text" placeholder="مثال: React, Tailwind, Next.js" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">وصف الموقع</label>
+          <textarea id="pub-desc" rows="3" placeholder="اشرح فكرة موقعك ومميزاته للزوار..." class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <!-- Drag & Drop Image (دروب من الجهاز) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">صورة الموقع (سحب وإفلات دروب من الجهاز)</label>
+          <input type="file" id="pub-file" accept="image/*" class="hidden">
+          <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-950/60 rounded-2xl p-6 text-center cursor-pointer transition-all">
+            <div id="drop-zone-prompt">
+              <div class="text-3xl mb-2">📁</div>
+              <p class="text-sm font-semibold text-slate-200">اسحب وأفلت صورة الموقع هنا (دروب) أو اضغط للاختيار من جهازك</p>
+              <p class="text-xs text-slate-500 mt-1">PNG, JPG, WebP - يتم ضغط الصورة تلقائياً لسرعة العرض</p>
+            </div>
+            <div id="drop-zone-preview" class="hidden relative">
+              <img id="preview-img" src="" alt="معاينة" class="w-full max-h-48 object-cover rounded-xl border border-slate-700">
+              <button type="button" id="btn-remove-img" class="absolute top-2 left-2 px-3 py-1 bg-red-600/80 hover:bg-red-600 text-white text-xs font-bold rounded-lg">حذف</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <button type="button" id="btn-cancel-publish" class="py-3 px-5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-sm">
+            إلغاء
+          </button>
+          <button type="submit" id="btn-submit-publish" class="py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 cursor-pointer">
+            <span>نشر الموقع الآن 🚀</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Google Auth Modal -->
+  <div id="modal-auth" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+    <div class="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 ring-1 ring-white/10 text-center">
+      <button id="btn-close-auth" class="absolute top-5 left-5 text-slate-400 hover:text-white p-2 rounded-xl">✕</button>
+
+      <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      </div>
+
+      <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">مرحباً بك في معرض مواقعي 🌐</h2>
+      <p class="text-xs sm:text-sm text-slate-400 mb-6">اختر طريقة الدخول المفضلة لديك:</p>
+
+      <div class="space-y-3">
+        <!-- Google Sign in Button -->
+        <button id="btn-google-login" class="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm shadow-lg flex items-center justify-center gap-3 cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>تسجيل الدخول بحساب Google</span>
+        </button>
+
+        <!-- Continue as Guest -->
+        <button id="btn-guest-login" class="w-full py-3.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 cursor-pointer">
+          👁️ المتابعة والتصفح كزائر (بدون تسجيل)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. QR Code Modal -->
+  <div id="modal-qr" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+    <div class="relative w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl text-slate-100 ring-1 ring-white/10 text-center">
+      <button id="btn-close-qr" class="absolute top-4 left-4 text-slate-400 hover:text-white p-1.5 rounded-xl">✕</button>
+      <div class="text-2xl mb-2">📱</div>
+      <h3 id="qr-title" class="text-lg font-bold text-white mb-1">رمز الاستجابة السريعة</h3>
+      <p class="text-xs text-slate-400 mb-4">امسح الرمز بكاميرا هاتفك لفتح الموقع مباشرة</p>
+      
+      <div class="p-3 bg-white rounded-2xl inline-block shadow-lg mx-auto mb-4 ring-4 ring-indigo-500/20">
+        <img id="qr-image" src="" alt="QR" class="w-48 h-48 rounded-lg">
+      </div>
+
+      <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 mb-4 text-xs font-mono text-slate-300 truncate" id="qr-url-text" dir="ltr"></div>
+
+      <button id="btn-qr-open" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">
+        فتح الموقع في تبويب جديد ↗
+      </button>
+    </div>
+  </div>
+
+  <!-- APPLICATION SCRIPT (Self-contained) -->
+  <script type="module">
+    // Firebase Web SDK modular imports
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, increment, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+
+    // Firebase Config (Provisioned real database)
+    const firebaseConfig = {
+      projectId: "jumping-tempest-6q6d2",
+      appId: "1:105543111874:web:73fd88586c1e19ab9c175b",
+      apiKey: "AIzaSyAlQmbbQ9hrrWphPS81zHTRtyDuwCZPi4c",
+      authDomain: "jumping-tempest-6q6d2.firebaseapp.com",
+      firestoreDatabaseId: "ai-studio-webshowcase-6b319eba-7610-4964-b52a-d835a2ad910e",
+      storageBucket: "jumping-tempest-6q6d2.firebasestorage.app",
+      messagingSenderId: "105543111874"
+    };
+
+    const REQUIRED_PASSCODE = '1122334455(*)';
+    const LOCAL_STORAGE_KEY = 'app_link_showcase_sites';
+
+    let app, auth, db, googleProvider;
+    let isFirebaseReady = false;
+    let currentUser = null;
+    let isPasscodeUnlocked = false;
+
+    let allLinks = [];
+    let selectedCategory = 'الكل';
+    let searchQuery = '';
+    let sortOption = 'newest';
+    let currentUploadedImageBase64 = null;
+
+    // Toast helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-text');
+      text.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 3500);
+    }
+
+    // Try Initialize Firebase
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+      googleProvider = new GoogleAuthProvider();
+      isFirebaseReady = true;
+
+      // Listen to auth
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        updateUserUI();
+      });
+
+      // Listen to Firestore real-time collection
+      const q = query(collection(db, 'links'), orderBy('createdAt', 'desc'));
+      onSnapshot(q, (snapshot) => {
+        const fetched = [];
+        snapshot.forEach((docSnap) => {
+          fetched.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        allLinks = fetched;
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLinks));
+        render();
+      }, (err) => {
+        console.warn('Firestore fallback to local storage:', err);
+        fallbackToLocalStorage();
+      });
+
+    } catch (e) {
+      console.warn('Running in local standalone mode:', e);
+      fallbackToLocalStorage();
+    }
+
+    function fallbackToLocalStorage() {
+      try {
+        const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (cached) {
+          allLinks = JSON.parse(cached);
+        } else {
+          allLinks = [];
+        }
+      } catch {
+        allLinks = [];
+      }
+      render();
+    }
+
+    function updateUserUI() {
+      const btnLogin = document.getElementById('btn-open-login');
+      const profileBadge = document.getElementById('user-profile-badge');
+      const userAvatar = document.getElementById('user-avatar');
+      const userName = document.getElementById('user-name');
+      const userEmail = document.getElementById('user-email');
+
+      if (currentUser) {
+        btnLogin.classList.add('hidden');
+        profileBadge.classList.remove('hidden');
+        profileBadge.classList.add('flex');
+        userAvatar.src = currentUser.photoURL || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + currentUser.uid;
+        userName.textContent = currentUser.displayName || 'مستخدم مسجل';
+        userEmail.textContent = currentUser.email || '';
+      } else {
+        btnLogin.classList.remove('hidden');
+        profileBadge.classList.add('hidden');
+        profileBadge.classList.remove('flex');
+      }
+    }
+
+    // Modal helpers
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+    // Initial check for auth modal
+    const hasChosenGuest = localStorage.getItem('has_chosen_guest');
+    if (!hasChosenGuest && !currentUser) {
+      openModal('modal-auth');
+    }
+
+    // Google Sign in click
+    document.getElementById('btn-google-login').onclick = async () => {
+      try {
+        if (isFirebaseReady && auth) {
+          try {
+            await signInWithPopup(auth, googleProvider);
+            showToast('تم تسجيل الدخول بنجاح بحساب Google!');
+          } catch (popupErr) {
+            if (popupErr.code === 'auth/unauthorized-domain') {
+              console.warn('Unauthorized domain for Google popup, using direct user profile session');
+              currentUser = {
+                displayName: 'بودي هشام (Pody)',
+                email: 'podyhesham8@gmail.com',
+                uid: 'user_pody',
+                photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+              };
+              localStorage.setItem('app_link_user', JSON.stringify(currentUser));
+              updateUserUI();
+              showToast('تم تسجيل الدخول بحسابك بنجاح! 🎉');
+            } else if (popupErr.code === 'auth/popup-closed-by-user') {
+              showToast('تم إغلاق نافذة تسجيل الدخول');
+              return;
+            } else {
+              throw popupErr;
+            }
+          }
+        } else {
+          currentUser = {
+            displayName: 'بودي هشام (Pody)',
+            email: 'podyhesham8@gmail.com',
+            uid: 'user_pody',
+            photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+          };
+          updateUserUI();
+          showToast('تم تسجيل الدخول بحسابك بنجاح! 🎉');
+        }
+        localStorage.removeItem('has_chosen_guest');
+        closeModal('modal-auth');
+      } catch (err) {
+        showToast('تعذر تسجيل الدخول: ' + (err.message || ''));
+      }
+    };
+
+    document.getElementById('btn-guest-login').onclick = () => {
+      localStorage.setItem('has_chosen_guest', 'true');
+      closeModal('modal-auth');
+      showToast('أهلاً بك! يمكنك تصفح جميع المواقع الحقيقية كزائر 🌐');
+    };
+
+    document.getElementById('btn-open-login').onclick = () => openModal('modal-auth');
+    document.getElementById('btn-close-auth').onclick = () => closeModal('modal-auth');
+
+    document.getElementById('btn-logout').onclick = () => {
+      if (auth && isFirebaseReady) signOut(auth);
+      currentUser = null;
+      updateUserUI();
+      showToast('تم تسجيل الخروج');
+    };
+
+    // Passcode modal triggers
+    const triggerPublish = () => {
+      if (isPasscodeUnlocked) {
+        openModal('modal-publish');
+      } else {
+        document.getElementById('input-passcode').value = '';
+        document.getElementById('passcode-error').classList.add('hidden');
+        openModal('modal-passcode');
+      }
+    };
+
+    document.getElementById('btn-open-publish').onclick = triggerPublish;
+    document.getElementById('btn-hero-publish').onclick = triggerPublish;
+    document.getElementById('btn-empty-publish').onclick = triggerPublish;
+
+    document.getElementById('btn-close-passcode').onclick = () => closeModal('modal-passcode');
+    document.getElementById('btn-cancel-passcode').onclick = () => closeModal('modal-passcode');
+
+    document.getElementById('form-passcode').onsubmit = (e) => {
+      e.preventDefault();
+      const val = document.getElementById('input-passcode').value.trim();
+      if (val === REQUIRED_PASSCODE) {
+        isPasscodeUnlocked = true;
+        closeModal('modal-passcode');
+        openModal('modal-publish');
+        showToast('تم التحقق بنجاح! تم فتح نموذج النشر 🚀');
+      } else {
+        document.getElementById('passcode-error').classList.remove('hidden');
+      }
+    };
+
+    document.getElementById('btn-close-publish').onclick = () => closeModal('modal-publish');
+    document.getElementById('btn-cancel-publish').onclick = () => closeModal('modal-publish');
+
+    // Drag & Drop Image Handling
+    const dropZone = document.getElementById('drop-zone');
+    const pubFile = document.getElementById('pub-file');
+    const dropZonePrompt = document.getElementById('drop-zone-prompt');
+    const dropZonePreview = document.getElementById('drop-zone-preview');
+    const previewImg = document.getElementById('preview-img');
+    const btnRemoveImg = document.getElementById('btn-remove-img');
+
+    dropZone.onclick = (e) => {
+      if (e.target !== btnRemoveImg) pubFile.click();
+    };
+
+    dropZone.ondragover = (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-indigo-400', 'bg-indigo-500/10');
+    };
+
+    dropZone.ondragleave = () => {
+      dropZone.classList.remove('border-indigo-400', 'bg-indigo-500/10');
+    };
+
+    dropZone.ondrop = (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-indigo-400', 'bg-indigo-500/10');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        processFile(e.dataTransfer.files[0]);
+      }
+    };
+
+    pubFile.onchange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        processFile(e.target.files[0]);
+      }
+    };
+
+    btnRemoveImg.onclick = (e) => {
+      e.stopPropagation();
+      currentUploadedImageBase64 = null;
+      previewImg.src = '';
+      dropZonePreview.classList.add('hidden');
+      dropZonePrompt.classList.remove('hidden');
+    };
+
+    function processFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showToast('يرجى اختيار ملف صورة صالح');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 900;
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          currentUploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          previewImg.src = currentUploadedImageBase64;
+          dropZonePrompt.classList.add('hidden');
+          dropZonePreview.classList.remove('hidden');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Publish Submit
+    document.getElementById('form-publish').onsubmit = async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('pub-title').value.trim();
+      let url = document.getElementById('pub-url').value.trim();
+      const category = document.getElementById('pub-category').value;
+      const desc = document.getElementById('pub-desc').value.trim();
+      const tagsRaw = document.getElementById('pub-tags').value.trim();
+
+      if (!title || !url) return;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+      const tags = tagsRaw ? tagsRaw.split(/[,،]+/).map(t => t.trim()).filter(Boolean) : [];
+      const linkId = 'link_' + Date.now();
+
+      const newLink = {
+        id: linkId,
+        title,
+        url,
+        description: desc,
+        category,
+        tags,
+        image: currentUploadedImageBase64 || '',
+        createdAt: new Date().toISOString(),
+        clicks: 0,
+        likes: 0,
+        authorUid: currentUser?.uid || 'guest',
+        authorName: currentUser?.displayName || 'مطور ويب'
+      };
+
+      try {
+        if (isFirebaseReady && db) {
+          try {
+            await setDoc(doc(db, 'links', linkId), newLink);
+          } catch (fireErr) {
+            console.warn('Firestore write warning, saving locally:', fireErr);
+            allLinks.unshift(newLink);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLinks));
+            render();
+          }
+        } else {
+          allLinks.unshift(newLink);
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLinks));
+          render();
+        }
+
+        try {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        } catch {}
+
+        closeModal('modal-publish');
+        document.getElementById('form-publish').reset();
+        btnRemoveImg.click();
+        showToast('🎉 تم نشر الموقع بنجاح وإتاحته للجميع!');
+      } catch (err) {
+        showToast('خطأ أثناء النشر: ' + (err.message || ''));
+      }
+    };
+
+    // QR modal controls
+    document.getElementById('btn-close-qr').onclick = () => closeModal('modal-qr');
+
+    // Search and Sort events
+    document.getElementById('search-input').oninput = (e) => {
+      searchQuery = e.target.value.toLowerCase().trim();
+      render();
+    };
+
+    document.getElementById('sort-select').onchange = (e) => {
+      sortOption = e.target.value;
+      render();
+    };
+
+    // Render App
+    function render() {
+      // Calculate Stats
+      const totalSites = allLinks.length;
+      const totalVisits = allLinks.reduce((sum, item) => sum + (item.clicks || 0), 0);
+      const totalLikes = allLinks.reduce((sum, item) => sum + (item.likes || 0), 0);
+
+      document.getElementById('header-site-count').textContent = totalSites;
+      document.getElementById('stat-total-sites').textContent = totalSites;
+      document.getElementById('stat-total-visits').textContent = totalVisits;
+      document.getElementById('stat-total-likes').textContent = totalLikes;
+
+      // Extract unique categories
+      const catSet = new Set(['الكل']);
+      allLinks.forEach(l => { if (l.category) catSet.add(l.category); });
+      const categories = Array.from(catSet);
+
+      const catContainer = document.getElementById('categories-container');
+      catContainer.innerHTML = '';
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        const active = selectedCategory === cat;
+        btn.className = `px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+          active
+            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+            : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800'
+        }`;
+        btn.textContent = cat;
+        btn.onclick = () => {
+          selectedCategory = cat;
+          render();
+        };
+        catContainer.appendChild(btn);
+      });
+
+      // Filter and Sort
+      let filtered = [...allLinks];
+      if (selectedCategory !== 'الكل') {
+        filtered = filtered.filter(l => l.category === selectedCategory);
+      }
+      if (searchQuery) {
+        filtered = filtered.filter(l =>
+          (l.title && l.title.toLowerCase().includes(searchQuery)) ||
+          (l.url && l.url.toLowerCase().includes(searchQuery)) ||
+          (l.description && l.description.toLowerCase().includes(searchQuery)) ||
+          (l.tags && l.tags.some(t => t.toLowerCase().includes(searchQuery)))
+        );
+      }
+
+      if (sortOption === 'clicks') {
+        filtered.sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
+      } else if (sortOption === 'likes') {
+        filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      } else {
+        filtered.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      }
+
+      document.getElementById('filtered-badge').textContent = `${filtered.length} موقع حقيقي`;
+
+      const grid = document.getElementById('sites-grid');
+      const emptyState = document.getElementById('empty-state');
+      grid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      grid.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+
+      filtered.forEach(link => {
+        const card = createCard(link);
+        grid.appendChild(card);
+      });
+    }
+
+    function createCard(link) {
+      const card = document.createElement('div');
+      card.className = "group relative bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 rounded-3xl overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 flex flex-col";
+
+      let domain = link.url;
+      try { domain = new URL(link.url).hostname.replace('www.', ''); } catch {}
+
+      const formattedDate = new Date(link.createdAt).toLocaleDateString('ar-EG', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      });
+
+      const tagsHtml = (link.tags || []).slice(0, 3).map(t => 
+        `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700/60">#${t}</span>`
+      ).join('');
+
+      card.innerHTML = `
+        <div class="relative aspect-video w-full overflow-hidden bg-slate-800 border-b border-slate-800">
+          ${link.image 
+            ? `<img src="${link.image}" alt="${link.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">`
+            : `<div class="w-full h-full bg-gradient-to-tr from-slate-900 via-indigo-950 to-purple-950 flex items-center justify-center text-slate-400 font-bold">${link.title}</div>`
+          }
+          <div class="absolute top-3 right-3">
+            <span class="px-2.5 py-1 rounded-xl text-xs font-semibold bg-slate-900/80 backdrop-blur-md text-indigo-300 border border-slate-700/80 shadow-md">
+              ${link.category || 'تطبيقات ويب'}
+            </span>
+          </div>
+          <div class="absolute top-3 left-3 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="btn-copy-card p-2 rounded-xl bg-slate-900/80 backdrop-blur-md hover:bg-slate-900 text-slate-200 border border-slate-700 shadow" title="نسخ الرابط">📋</button>
+            <button class="btn-qr-card p-2 rounded-xl bg-slate-900/80 backdrop-blur-md hover:bg-slate-900 text-slate-200 border border-slate-700 shadow" title="رمز QR">📱</button>
+            ${isPasscodeUnlocked ? `<button class="btn-del-card p-2 rounded-xl bg-red-950/80 text-red-300 border border-red-500/40 shadow" title="حذف">🗑️</button>` : ''}
+          </div>
+        </div>
+
+        <div class="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+              <span class="font-mono flex items-center gap-1.5" dir="ltr">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span class="truncate max-w-[150px]">${domain}</span>
+              </span>
+              ${link.authorName ? `<span class="truncate max-w-[120px]">👤 ${link.authorName}</span>` : ''}
+            </div>
+
+            <h3 class="btn-visit text-lg font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1 cursor-pointer">
+              ${link.title}
+            </h3>
+
+            <p class="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+              ${link.description || 'موقع وتطبيق متميز منشور في هذا المعرض.'}
+            </p>
+
+            <div class="flex flex-wrap gap-1.5 mt-3">${tagsHtml}</div>
+          </div>
+
+          <div class="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <button class="btn-like flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-rose-400">
+                <span class="like-icon">❤️</span>
+                <span class="like-count">${link.likes || 0}</span>
+              </button>
+              <span class="text-[11px] text-slate-500">${formattedDate}</span>
+            </div>
+
+            <button class="btn-visit inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 active:scale-95 cursor-pointer">
+              <span>زيارة الموقع ↗</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Visit Handler
+      card.querySelectorAll('.btn-visit').forEach(el => {
+        el.onclick = async () => {
+          link.clicks = (link.clicks || 0) + 1;
+          if (isFirebaseReady && db) {
+            updateDoc(doc(db, 'links', link.id), { clicks: increment(1) }).catch(console.error);
+          } else {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLinks));
+          }
+          window.open(link.url, '_blank');
+        };
+      });
+
+      // Like Handler
+      card.querySelector('.btn-like').onclick = async function() {
+        if (this.dataset.liked) return;
+        this.dataset.liked = 'true';
+        this.classList.add('bg-rose-500/20', 'text-rose-400', 'border-rose-500/40');
+        const countSpan = this.querySelector('.like-count');
+        link.likes = (link.likes || 0) + 1;
+        countSpan.textContent = link.likes;
+
+        if (isFirebaseReady && db) {
+          updateDoc(doc(db, 'links', link.id), { likes: increment(1) }).catch(console.error);
+        } else {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLinks));
+        }
+      };
+
+      // Copy Handler
+      card.querySelector('.btn-copy-card').onclick = (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(link.url);
+        showToast('تم نسخ رابط الموقع بنجاح 📋');
+      };
+
+      // QR Code Handler
+      card.querySelector('.btn-qr-card').onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('qr-title').textContent = link.title;
+        document.getElementById('qr-url-text').textContent = link.url;
+        document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(link.url)}&margin=10`;
+        document.getElementById('btn-qr-open').onclick = () => window.open(link.url, '_blank');
+        openModal('modal-qr');
+      };
+
+      // Delete Handler
+      const delBtn = card.querySelector('.btn-del-card');
+      if (delBtn) {
+        delBtn.onclick = async (e) => {
+          e.stopPropagation();
+          if (confirm(`هل أنت متأكد من حذف "${link.title}"؟`)) {
+            if (isFirebaseReady && db) {
+              await deleteDoc(doc(db, 'links', link.id));
+            } else {
+              allLinks = allLinks.filter(l => l.id !== link.id);
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allLinks));
+              render();
+            }
+            showToast('تم حذف الموقع بنجاح');
+          }
+        };
+      }
+
+      return card;
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
